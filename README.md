@@ -250,6 +250,10 @@ $('#widget-header-' + w.general.renderTo + ' a ').text('   ' + w.series[0].name.
 w.legend.itemStyle["textOverflow"] = "word-break"; // перенос слов на следующую строку
 w.legend.itemStyle.width = "160px";  // ширина блока 160 пикселей 
 ```
+### 1.29 Код для перекраски фона виджета в градиент
+```javascript
+$('#' + w.general.renderTo).css({'background-image': 'linear-gradient(-110deg, #ef5350, #b71c1c)'})	// -110deg - угол градиента
+```
 ## 2 Форматирование подписей
 
 ### 2.1 Использование форматирования через поле в property grid DD
@@ -275,6 +279,12 @@ Math.round(@value.y/1000)  // Округление до тысяч
 ##### Поставить пробелы между тысячами
 ```javascript
 Math.round(@value.y).toString().replace(/(?!^)(?=(?:\d{3})+(?:\.|$))/gm, ' ')
+```
+##### Поставить пробелы между тысячами у подписей суммы при включенном накоплении
+```javascript
+w.yAxis.stackLabels.formatter = function() {
+   return Math.round(this.total).toString().replace(/(?!^)(?=(?:\d{3})+(?:\.|$))/gm, ' ')
+}
 ```
 ##### Покрасить подпись в цвет точки
 ```javascript
@@ -842,6 +852,24 @@ $('#table-' + w.general.renderTo + ' tr>td').css({ 'font-weight': 'bold', 'text-
 $('#table-' + w.general.renderTo + ' tr>td:not(:first-child)').css({ 'font-weight': 'bold', 'text-align': 'center' });
 ```
 
+### 3.18 Поменять местами столбцы в таблице
+
+Может пригодиться, когда расчетный столбец нужно передвинуть. В примере четвёртый столбец встаёт между 1м и 2м. 
+```javascript
+w.data.colNames.splice(1, 0, w.data.colNames[3])        //Вставляем название столбца 4 между 1 и 2 столбцами
+w.data.colNames.splice(4)                               //Удаляем название последнего столбца
+w.data.columns.splice(2, 0, w.data.columns[4]);         //Вставляем "шапку" 4го столбца между 1м и 2м
+w.data.columns.splice(5)                                //Удаляем шапку последнего столбца
+
+w.data.records.forEach(elem => {                        //Для каждой строки таблицы
+    let col1 = elem["column 1"];                        //Записываем в переменную col1 значение второго столбца    
+    let col2 = elem["column 2"];                        //Записываем в переменную col2 значение третьего столбца 
+    elem["column 1"] =  elem["column 3"]                //Заменяем значение второго столбца значением из 4го
+    elem["column 2"] = col1                             //Заменяем значение 3го столбца значением из 2го
+    elem["column 3"] = col2                             //Заменяем значение 4го столбца значением из 3го
+})
+```
+
 ## 4 Гистограммы
 
 ### 4.1 Изменения при добавлении пользовательского виджета с сайта https://www.highcharts.com/
@@ -1090,7 +1118,11 @@ Highcharts.chart({
 ```javascript
 w.plotOptions.series.borderRadius = 12;
 ```
-### 4.10 Сделать гистограмму "Водопад"
+### 4.10 Установить минимальный размер столбиков. (Минус в том, что у у нулевых столбиков тоже будет минимальный размер)
+```javascript
+w.plotOptions.series.minPointLength = 10;
+```
+### 4.11 Сделать гистограмму "Водопад"
 ```javascript
 w.xAxis.categories = months.map(function(x){
     return x + '\'' + w.xAxis.categories[0].split('-')[0].slice(2);
